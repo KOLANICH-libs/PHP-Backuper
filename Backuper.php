@@ -145,6 +145,7 @@ class Backuper{
 			}catch(Exception $err){
 				echo 'preparing backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err."\n<br/>";
 			}
+
 		}
 	}
 	

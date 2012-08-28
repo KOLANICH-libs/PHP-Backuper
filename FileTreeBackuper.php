@@ -82,7 +82,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		$res=$this->queries->GetTree->execute();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=$row;//!< it looks like here I need & (a reference) here but id doesn't work by unknown reason
+			$this->inodes[$row->inode]=$row;// it looks like here I need & (a reference) here but id doesn't work by unknown reason
 		}
 		$this->queries->getTree->closeCursor();
 	}
@@ -91,7 +91,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		$arr=array();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=&$row;//!< it looks like i need & (a reference) here but id doesn't work by unknown reason
+			$this->inodes[$row->inode]=&$row;//it looks like i need & (a reference) here but id doesn't work by unknown reason
 			//$arr[$row->inode]=&$this->inodes[$row->inode];
 			$arr[$row->inode]=$this->inodes[$row->inode];
 		}
@@ -332,7 +332,6 @@ class FileTreeBackupDir extends FileTreeDir{
 		new dBug($children);*/
 		
 		foreach($this->childrenIter as $child){
-			//if($child->isDot())continue;
 			if($child->isDir()){
 				$child=new static($child,$this);
 			}
@@ -397,8 +396,6 @@ class FileTreeBackupDir extends FileTreeDir{
 		//var_dump($this->index);*/
 		//drawHierarchy($this->index->added);
 		
-		
-		
 		$fChild->process();
 		echo "<hr color='red'/>";
 	}
@@ -434,6 +431,8 @@ class FileTreeBackuper implements IBackuper{
 		foreach($this->roots as &$root){
 			$root->process();
 		}
+
+		//drawHierarchy($this->index->added);
 		echo "<hr color='purple'/>";
 		static::detectMoved();
 		echo "<hr color='magenta'/>";
@@ -505,11 +504,10 @@ class FileTreeBackuper implements IBackuper{
 		}
 	}
 	private function archivateChanged(){
-		//! temporary it has the same realization like archivateAdded but later we will add diff for text-based files
+		//! temporary it has practically the same implementation as archivateAdded but later we will add diff for text-based files
 		foreach($this->index->changed as $inode=>&$node){
 			echo "archivating ".$this->index->inodes[$node->parent]->path.'/'.$node->name.' as '.static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name.'</br>';
 			if($node instanceof IFileTreeDir){
-				//$this->zip->addEmptyDir(static::filesDir.$node->relPath);
 				continue;
 			}
 			if(!$this->zip->addFile(
