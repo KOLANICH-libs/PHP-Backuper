@@ -114,10 +114,14 @@ class Backuper{
 		$this->zipFileName=static::$archiveTempDir.'/'.$this->zipFileShortName;
 		new dBug($this->zipFileName);
 		if(!$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE))throw new Exception("Cannot create archive");
-		new dBug($this->zip);
+		//new dBug($this->zip);
+		//new dBug($this->zip);
 		
 		$this->comment=$time."\n".date("g:i:s A D d.m.y",$time)."\n";
+		
+		//! calling plugins
 		static::makeBackups();
+		
 		$this->zip->setArchiveComment($this->comment);
 		unset($this->comment);
 		static::backupIndex();	
@@ -137,10 +141,10 @@ class Backuper{
 		foreach($this->plugins->backup as $name=>&$backuper){
 			try{
 				$backuper->prepareForBackup($this->index->base);
+				echo "preparing backuping plugin $name <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
-				echo 'preparing backuping plugin '.$name.' FAILED: '.$err."\n<br/>";
+				echo 'preparing backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err."\n<br/>";
 			}
-			echo "preparing backuping plugin $name succeed\n<br/>";
 		}
 	}
 	
@@ -154,12 +158,11 @@ class Backuper{
 				$res=$backuper->makeBackup($this->zip);
 				if(isset($res)){
 					if(isset($res['comment']))$this->comment.=$res['comment'];
-					
 				}
+				echo "backuping plugin $name <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
-				echo $name.' backuping plugin '.$name.' FAILED: '.$err->getMessage()."\n<br/>";
+				echo $name.' backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err->getMessage()."\n<br/>";
 			}
-			echo "backuping plugin $name succeed\n<br/>";
 		}
 	}
 	
@@ -176,10 +179,10 @@ class Backuper{
 			try{
 				$uploader->upload($this->zipFileName,$this->zipFileShortName);
 			}catch(Exception $err){
-				echo $uplnm.' uploading FAILED: '.get_class($err).':'.$err->getCode().':'.$err-getMessage()."\n<br/>";
+				echo $uplnm.' uploading <font color="red">FAILED</font>: '.get_class($err).':'.$err->getCode().':'.$err-getMessage()."\n<br/>";
 				$uploadsFailed++;
 			}
-			echo $uplnm.' uploading suceed\n<br/>';
+			echo $uplnm.' uploading <font color="green">succeed</font>\n<br/>';
 		}
 		if($uploadsFailed!=$uploaders&&$uploaders!=0){
 			unlink($this->zipFileName);
