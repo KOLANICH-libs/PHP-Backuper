@@ -165,17 +165,17 @@ class FileTreeItem implements IFileTreeItem{
 		//echo "the dir is:".$dir."\n";
 		//echo "the object path is:".$dir+"/"+$name."\n";
 		echo "constructing ".$file->getPathname()."<br/>\n";
-		//if(!$parent)$parent=&$this;
 		if(!$parent)throw new Exception("file has no parent. Serious bug!!!");
-		
-		
 		$this->name=$file->getFilename();
-		/*$this->inode=$file->getInode();
+		
+		/*
+		$this->inode=$file->getInode();
 		$this->mtime=$file->getMTime();
 		$this->ctime=$file->getCTime();
 		$this->size=$file->getSize();
 		$this->uid=$file->getOwner();*/
 		foreach(static::$attributesForHashing as $getter=>&$atrName)$this->$atrName=$file->$getter();
+		//good style and flexibility makes overhead
 		
 		if(!$this->inode){
 			//!in windows $file->getInode() returns 0
@@ -229,7 +229,7 @@ class FileTreeDir extends FileTreeItem implements IFileTreeDir{
 	function __construct(RecursiveDirectoryIterator  &$file,IFileTreeDir &$parent){
 		parent::__construct($file,$parent);
 		$this->path=$file->getPathname();
-		new dBug($this->path);
+		//new dBug($this->path);
 		$this->childrenIter=$file->getChildren();
 	}
 	function process(){
@@ -340,7 +340,7 @@ class FileTreeBackupDir extends FileTreeDir{
 			if(isset($children[$child->inode])){
 				echo "There is element of children with inode {$child->inode}\n<br/>";
 				echo "hash is ".$child->hash." cached hash is {$children[$child->inode]->hash}\n<br/>";
-				new dBug($this->index->inodes[$child->inode]);
+				//new dBug($this->index->inodes[$child->inode]);
 				
 				if($children[$child->inode]->hash!=$child->hash){
 					//changed
@@ -369,12 +369,12 @@ class FileTreeBackupDir extends FileTreeDir{
 		
 		/*echo "after\n<br/>";
 		new dBug($children);
-		var_dump($this->index);
-		var_dump($this->index->added);*/
+		//var_dump($this->index);
+		//var_dump($this->index->added);*/
 		
 		foreach($children as $inode=>$cachedChild){
 			echo "file {$cachedChild->name} ({$cachedChild->inode}) was deleted\n<br/>\n";
-			new dBug($cachedChild);
+			//new dBug($cachedChild);
 			//$this->index->deleted[$inode]=&$cachedChild;//TODO:why does the reference cause terrible errors in logic?
 			$this->index->deleted[$inode]=$cachedChild;
 		}
@@ -384,11 +384,11 @@ class FileTreeBackupDir extends FileTreeDir{
 	function processChild(IFileTreeItem &$fChild){
 		echo "processing child {$fChild->name} ({$fChild->inode}) of {$this->name} ({$this->inode})\n<br/>\n";
 		
-		/*echo 'var_dump($this->index->inodes)';
-		var_dump($this->index->inodes);
-		echo 'var_dump($this->index)';
-		var_dump($this->index);*/
-		drawHierarchy($this->index->added);
+		/*echo '//var_dump($this->index->inodes)';
+		//var_dump($this->index->inodes);
+		echo '//var_dump($this->index)';
+		//var_dump($this->index);*/
+		//drawHierarchy($this->index->added);
 		
 		
 		
@@ -427,7 +427,7 @@ class FileTreeBackuper implements IBackuper{
 		foreach($this->roots as &$root){
 			$root->process();
 		}
-		drawHierarchy($this->index->added);
+		//drawHierarchy($this->index->added);
 		echo "<hr color='purple'/>";
 		static::detectMoved();
 		echo "<hr color='magenta'/>";
@@ -452,11 +452,11 @@ class FileTreeBackuper implements IBackuper{
 	private function detectMoved(){
 		echo "<hr color='lemonchiffon'/>Detecting moved....<br/>";
 		foreach($this->index->deleted as $inode=>&$node){
-			new dBug($node);
+			//new dBug($node);
 			if(isset($this->index->added[$inode])){
-				var_dump($this->index->added[$inode]);
-				var_dump($this->index->inodes[$inode]);
-				var_dump($node);
+				//var_dump($this->index->added[$inode]);
+				//var_dump($this->index->inodes[$inode]);
+				//var_dump($node);
 				if($this->index->added[$inode]->pathhash!=$node->pathhash){
 					//moved
 					//var_dump($this->index->changed[$node->parent]);
@@ -483,7 +483,7 @@ class FileTreeBackuper implements IBackuper{
 				$this->zip->addEmptyDir(static::filesDir.$node->relPath);
 				continue;
 			}
-			var_dump($node);
+			//var_dump($node);
 			//var_dump($this->index->inodes[$node->parent]);
 			if(!$this->zip->addFile(
 				$this->index->inodes[$node->parent]->path.'/'.$node->name,

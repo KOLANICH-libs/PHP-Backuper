@@ -64,9 +64,8 @@ class Backuper{
 				$this->plugins->$pltype=array();
 				foreach($prefs[$pltype] as $pluginName=>&$pluginPrefs){
 					$plnm=$pluginName.ucfirst($pltype)."er";
-					//include_once(__DIR__.'/'.$plnm.".php");//maybe simple include?
 					try{
-						include_once($plnm.".php");
+						if(!include_once ($plnm.".php"))throw new Exception('Plugin '.$plnm.' was not found');
 						$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
 					}
 					catch(Exception $err){
@@ -91,7 +90,7 @@ class Backuper{
 				echo "$bname : backup is not needed\n<br/>";
 			}
 		}
-		var_dump($this->plugins->backup);
+		//var_dump($this->plugins->backup);
 		if(empty($this->plugins->backup))
 			return 0;
 		else
