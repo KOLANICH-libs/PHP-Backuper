@@ -1,5 +1,10 @@
 <?
 include_once __DIR__.'/../Sabre/autoload.php';
+/*!
+	Uploads the backup to any WebDAV server using login and password
+	it is insecure to store login and password on the server so oauth uploaders are preffered
+	(though I think that it is possible to set server's prefs in same way that it will ask different credentials for uploading and downloading)
+*/
 class WebDAVUploader implements IUploader{
 	public $dir;
 	public $webDav;

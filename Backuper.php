@@ -1,21 +1,47 @@
 <?
 require_once("BackuperIndex.php");
 
-
-
 interface IBackuper{
+	/*!
+	initializes backuper plugin with prefs
+	$prefs can be anything your plugin will understand
+	*/
 	function __construct($prefs);
+	/*!
+	used to backup all informatin which needs backup
+	@param ZipArchive &$zip where backups will be packed to
+	
+	usually a backuper creates some subfolders in the archive and strores backup data in them, for example /base/MySQL for MySQLBackuper  or /files and /patches for FileTreeBackuper
+	@return array('comment'=>'string to be added to archive comment',...)
+	*/
 	function makeBackup(&$zip);
+	/*!
+	makes opperations needed for backup for example builds graph or looking for modified files
+	takes database object to store index data
+	usually you will want to use BackuperIndex subclass to mantain base
+	@param PDO &$base
+	*/
 	function prepareForBackup(&$base);
+	/*!
+	determines wheither backup is needed for this plugin
+	*/
 	function needBackup();
 };
 
 interface IUploader{
 	function __construct($prefs);
+	/*!
+	@param string $fileName pathname of the zip archive
+	@param string &$as desired name of the zip archive on the target backup location, usually the same
+	*/
 	function upload($fileName,$as);
 };
 
-
+/*!
+	Main backuper class.
+	Manages plugins and resources and use them to make backups and uploads.
+	It doesn't (and mustn't) implement IBackuper because it is not a plugin.
+*/
 class Backuper{
 	public $index, $roots=array();
 	static $archiveTempDir;
@@ -28,6 +54,9 @@ class Backuper{
 		$this->index=new BackuperIndex($filename);
 		static::initPlugins($prefs);
 	}
+	/*!
+	initializes the plugins (backupers and uploaders)
+	*/
 	function initPlugins($prefs){
 		$this->plugins=new stdClass;
 		foreach(array("upload","backup") as $pltype){
@@ -36,13 +65,20 @@ class Backuper{
 				foreach($prefs[$pltype] as $pluginName=>&$pluginPrefs){
 					$plnm=$pluginName.ucfirst($pltype)."er";
 					//include_once(__DIR__.'/'.$plnm.".php");//maybe simple include?
-					include_once($plnm.".php");
-					$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
+					try{
+						include_once($plnm.".php");
+						$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
+					}
+					catch(Exception $err){
+						echo 'Plugin '.$plnm.'failed to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
+					}
 				}
 			}
 		}
 	}
-	
+	/*!
+	adds index file to archive
+	*/
 	function backupIndex(){
 		//$this->index->save();
 		$this->zip->addFile($this->index->fileName,static::$indexFileName);
@@ -62,6 +98,10 @@ class Backuper{
 			return 1;
 	}
 	
+	/*!
+	the method to be called by user to make backups
+	starts backup process
+	*/
 	function makeBackup(){
 		$time=time();
 		static::prepareForBackup();
@@ -90,6 +130,9 @@ class Backuper{
 		echo "<hr color='magenta'/>";
 	}
 	
+	/*!
+	prepares backups with backupers' method prepareForBackup
+	*/
 	function prepareForBackup(){
 		if(empty($this->plugins->backup))return;
 		foreach($this->plugins->backup as $name=>&$backuper){
@@ -102,7 +145,10 @@ class Backuper{
 		}
 	}
 	
-	function makeBackups(){//function for performing additional backups
+	/*!
+	make backups with backupers
+	*/
+	function makeBackups(){
 		if(empty($this->plugins->backup))return;
 		foreach($this->plugins->backup as $name=>&$backuper){
 			try{
@@ -112,13 +158,16 @@ class Backuper{
 					
 				}
 			}catch(Exception $err){
-				echo $name.' backuping plugin '.$name.' FAILED: '.$err."\n<br/>";
+				echo $name.' backuping plugin '.$name.' FAILED: '.$err->getMessage()."\n<br/>";
 			}
 			echo "backuping plugin $name succeed\n<br/>";
 		}
 	}
 	
-	
+	/*!
+	uploads the archive to different servers and services and deletes it from local disk
+	if no servers were specified or none of the uploads succeeded the zip file will not be deleted
+	*/
 	function save(){
 		if(empty($this->plugins->upload))return;
 		$uploadsFailed=0;
@@ -128,7 +177,7 @@ class Backuper{
 			try{
 				$uploader->upload($this->zipFileName,$this->zipFileShortName);
 			}catch(Exception $err){
-				echo $uplnm.' uploading FAILED: '.$err."\n<br/>";
+				echo $uplnm.' uploading FAILED: '.get_class($err).':'.$err->getCode().':'.$err-getMessage()."\n<br/>";
 				$uploadsFailed++;
 			}
 			echo $uplnm.' uploading suceed\n<br/>';

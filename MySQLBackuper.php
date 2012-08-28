@@ -1,16 +1,22 @@
 <?
-/*
-Code was taken from sypex dumper v 1
-
+/*!
+	Makes backup of MySQL database in format similar to mysqldump.
+	The code was taken from sypex dumper v 1.
+	Now backups only structure and data, no triggers and prepared statements are backuped.
+	PHP script needs enough time and memory (and other resources) to finish.
 */
 
 class MySQLBackuper implements IBackuper{
 	public $db;
 	const baseDir="base/mysql",baseName="base.sql";
 	public $bases=null;
+	/*!
+		@param PDO $prefs
+		@param array $prefs : either array( PDO $base1 ) or array( 'base'=>array( PDO $base1 ),'dumpStructure'=>1,'dumpData'=>1 )
+	*/
 	function __construct($prefs){
 		if($prefs instanceof PDO){
-			$prefs=array($prefs);
+			$prefs=array('base'=>$prefs);
 		}
 		if(is_array($prefs)){
 			if(is_array($prefs["base"])){

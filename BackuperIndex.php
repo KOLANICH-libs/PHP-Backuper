@@ -4,12 +4,16 @@ interface IBackuperIndex{
 	function checkInitializedAndInitMissing();
 	function load();
 }
+/*!
+	A class for mantaining index.
+	Now index is stored in SQLite database.
+*/
 class BackuperIndex implements IBackuperIndex{
 	public $base=null;
 	public $queries;
 	const createTableQueryTempl='CREATE TABLE "%s" (%s);';
-	static $queriesTemplates=array();
-	static $baseStructureBuildQuery=array();
+	static $queriesTemplates=array();//!< contains the queries to make prepared statements
+	static $baseStructureBuildQuery=array();//!< contains the databases' structure
 	function __construct(&$base){
 		if(is_string($base)){
 			$this->base=new PDO("sqlite:".$base,NULL,NULL,
@@ -31,6 +35,9 @@ class BackuperIndex implements IBackuperIndex{
 		}
 		//var_dump($this);
 	}
+	/*!
+	 checks wheither all tables are created, creates the ones that are missing
+	*/
 	function checkInitializedAndInitMissing(){
 		if(empty(static::$baseStructureBuildQuery))return;
 		$res=$this->base->query("SELECT `name` FROM `sqlite_master` WHERE `type`='table';");

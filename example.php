@@ -22,6 +22,8 @@ $b=new Backuper(
 			"MySQL"=>array(
 				"base"=>new PDO('mysql:dbname=test;host=127.0.0.1',"test"),
 			),
+			//or "MySQL"=>new PDO('mysql:dbname=test;host=127.0.0.1',"root","",array(PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION)),
+			
 			/*'SugarSync'=>array( //now this doesn't work
 				"login"=>"test@test.ru",
 				"pass"=>'test',

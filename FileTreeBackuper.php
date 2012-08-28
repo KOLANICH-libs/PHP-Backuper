@@ -16,19 +16,28 @@ TODO:
 3 make processing of deleted items									 |
 3 fix that items in root folder are always added (at first fix point 1)
 */
-//require_once("BackuperIndex.php");
+
+
+/*!
+	an interface representing a node of file tree with some basic folder functionality such as hashing
+*/
 interface IFileTreeItem{
 	function hash();
 	function process();
 	//public $inode,$mtime,$ctime,$size,$uid;
 };
+/*!
+	an interface representing a folder with some basic folder functionality such as expanding children
+*/
 interface IFileTreeDir extends IFileTreeItem{
 	function processChild(IFileTreeItem &$fChild);
 	function expandChildren();
 };
 
 
-
+/*!
+	converts data from index database to object, because sqlite returns strings instead of integers
+*/
 function convertNodeFromBase(&$row){
 	$row->inode=(integer)$row->inode;
 	$row->parent=(integer)$row->parent;
@@ -72,7 +81,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		$res=$this->queries->GetTree->execute();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=$row;// it looks like here i need & but id doesn't work by unknown reason
+			$this->inodes[$row->inode]=$row;//!< it looks like here I need & (a reference) here but id doesn't work by unknown reason
 		}
 		$this->queries->getTree->closeCursor();
 	}
@@ -81,7 +90,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		$arr=array();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=$row;// it looks like here i need & (a reference) but id doesn't work by unknown reason
+			$this->inodes[$row->inode]=$row;//!< it looks like here i need & (a reference) here but id doesn't work by unknown reason
 			$arr[$row->inode]=&$this->inodes[$row->inode];
 		}
 		$this->queries->getChildren->closeCursor();
@@ -139,10 +148,14 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		return $time;
 	}
 };
+
+/*!
+	a class representing a file (or a folder) with some basic functionality
+*/
 class FileTreeItem implements IFileTreeItem{
 	public $name,$parent,$hash=0,$pathhash=0;
-	static $attributesForHashing=array('inode','mtime','ctime','size','uid');
-	//public $iter;
+	static $attributesForHashing=array('getInode'=>'inode','getMTime'=>'mtime','getCTime'=>'ctime','getSize'=>'size','getOwner'=>'uid');
+	
 	function showAtrs(){
 		$atrs=new stdClass;
 		foreach(static::$attributesForHashing as $atrName)$atrs->$atrName=$this->$atrName;
@@ -157,32 +170,31 @@ class FileTreeItem implements IFileTreeItem{
 		
 		
 		$this->name=$file->getFilename();
-		//$this->iter=$file;
-		$this->inode=$file->getInode();
+		/*$this->inode=$file->getInode();
 		$this->mtime=$file->getMTime();
 		$this->ctime=$file->getCTime();
 		$this->size=$file->getSize();
-		$this->uid=$file->getOwner();
-		
+		$this->uid=$file->getOwner();*/
+		foreach(static::$attributesForHashing as $getter=>&$atrName)$this->$atrName=$file->$getter();
 		
 		if(!$this->inode){
-			//in windows $file->getInode() returns 0
-			//so we have to make some bad kind of inode for debug purposes
+			//!in windows $file->getInode() returns 0
+			//!so we have to make some bad kind of inode for debug purposes
 			$this->inode=unpack('L',md5(
 				$file->isDir().
 				("|!".$file->isLink()).
-				"|!".$file->getFilename().
+				"|!".$this->name.
 				"|!".$this->ctime.
 				($file->isDir()?"":
 					//"|!".$file->getMTime().
 					//"|!".$this->mtime.///why had i included it to inode?
-					"|!".$file->getSize()
+					"|!".$this->size
 				)
 			,1));
 			$this->inode=$this->inode[1];
 		}
 		
-		$this->showAtrs();
+		//$this->showAtrs();
 		
 		$this->parent=$parent->inode;//it is here because the node may have yourself as parent
 		$this->pathhash=crc32($file->getPathname());
@@ -191,6 +203,9 @@ class FileTreeItem implements IFileTreeItem{
 		$parent->inodes[$this->inode]=&$this;
 		
 	}
+	/*!
+		function which make hashing (using md5), look at static::$attributesForHashing
+	*/
 	function hash(){
 		$hh=hash_init( "md5" );
 		foreach(static::$attributesForHashing as $atrName)hash_update($hh,$this->$atrName);
@@ -203,6 +218,10 @@ class FileTreeItem implements IFileTreeItem{
 	}*/
 	function process(){}
 };
+
+/*!
+	a class representing a folder with some basic folder functionality such as expanding children
+*/
 class FileTreeDir extends FileTreeItem implements IFileTreeDir{
 	protected $childrenIter=null;
 	public $children=null;
@@ -235,6 +254,10 @@ class FileTreeDir extends FileTreeItem implements IFileTreeDir{
 	}
 };
 
+
+/*!
+	converts an array of nodes into nested array and visualisates it using dBug
+*/
 function drawHierarchy(&$inodelist){
 	$arr=array();
 	foreach($inodelist as $inode=>&$file){
@@ -263,6 +286,10 @@ function drawHierarchy(&$inodelist){
 	new dBug($arr);
 }
 
+/*!
+	class representing a directory with backup functionality
+	not for direct usage
+*/
 class FileTreeBackupDir extends FileTreeDir{
 	public $index,$childrenCache;
 	public $root,$relPath;
@@ -372,7 +399,10 @@ class FileTreeBackupDir extends FileTreeDir{
 		
 	}
 };
-
+/*!
+	class representing a plugin for backuping file tree
+	takes array of adresses of roots of the backup
+*/
 class FileTreeBackuper implements IBackuper{
 	public $index, $roots=array();
 	const filesDir="files",patchesDir="patches";

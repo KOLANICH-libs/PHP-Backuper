@@ -1,5 +1,9 @@
 <?
 include_once(__DIR__.'/../DropboxUploader/DropboxUploader.php');
+/*!
+	Uploads the backup to Dropbox using login (e-mail) and password
+	it is insecure to store them on the server so it will be replaced with OAuth version
+*/
 class DropboxSimpleUploader implements IUploader{
 	public $dir;
 	public $dropbox;
