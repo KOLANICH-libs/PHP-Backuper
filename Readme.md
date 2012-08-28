@@ -4,6 +4,9 @@ This is a framework which will help you making (incremental) backups of your sit
 The framework is written in pure php an can be used on free hostings with supported PHP version ( 5.4+) and was designed as extensible.
 Feel free to fork and modify it.
 
+[Doxygen documentation](http://kolanich.github.com/PHP-Backuper/)
+
+
 Requirements
 ---
 PHP 5.4+
