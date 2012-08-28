@@ -28,12 +28,15 @@ class BackuperIndex implements IBackuperIndex{
 			$this->base=&$base;
 		
 		$res=$this->checkInitializedAndInitMissing();
-		$this->queries= new stdClass;
-		if(empty(static::$baseStructureBuildQuery))return;
+		static::prepareQueries();
+		//var_dump($this);
+	}
+	function prepareQueries(){
+		$this->queries=new stdClass;
+		if(empty(static::$queriesTemplates))return;
 		foreach(static::$queriesTemplates as $queryName=>&$query){
 			$this->queries->$queryName=$this->base->prepare($query);
 		}
-		//var_dump($this);
 	}
 	/*!
 	 checks wheither all tables are created, creates the ones that are missing

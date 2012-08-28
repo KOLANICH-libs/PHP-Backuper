@@ -1,23 +1,8 @@
 <?
 /*
-it seems that there are ready-to-use solutions
-	http://phphack.ru/seescript/771/
-	http://web4u.mirrors.phpclasses.org/package/4841-PHP-Manage-backup-copies-of-files-.html
-	bash http://ilab.me/howto/bash-tar-vps-backup/
-	http://tinyurl.com/7gsr9vb
-	
-	good links for article to xakep
-*/
-
-/*
 TODO:
-1 make root state be stored in base and arrays			<------------7
-2 make classes process oneselves									 |
-3 make processing of deleted items									 |
-3 fix that items in root folder are always added (at first fix point 1)
+make root state be stored in base and arrays
 */
-
-
 /*!
 	an interface representing a node of file tree with some basic folder functionality such as hashing
 */
@@ -55,9 +40,11 @@ class FileTreeBackuperIndex extends BackuperIndex{
 	static $queriesTemplates=array(
 		"getTree"=>'SELECT * FROM `fileTree`;',
 		"getChildren"=>"SELECT * FROM `fileTree` where `parent`=?;",
-		"addFileToTree"=>"INSERT INTO `fileTree` VALUES (:inode, :parent, :hash, :pathhash, :name);",
+		"upsertFileToTree"=>"INSERT INTO `fileTree` VALUES (:inode, :parent, :hash, :pathhash, :name);",
 		"deleteFileFromTree"=>"DELETE FROM `fileTree` WHERE `inode`=:inode;",
-		"addCommit"=>"INSERT INTO commits (`timestamp`) VALUES (:time);",
+		"addCommit"=>"INSERT INTO `commits` (`timestamp`) VALUES (:time);",
+		"addFileToMoved"=>"INSERT INTO `movedCurrent` VALUES (:inode,:prevParent);",
+		"addFileToDeleted"=>"INSERT INTO `deletedCurrent` VALUES (:name,:parent);",
 	);
 	static $baseStructureBuildQuery=array(
 		'fileTree'=>'
@@ -74,14 +61,28 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		'ignores'=>'"ignore"  varchar(512) NOT NULL',
 		'commits'=>'
 			"id"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-			"timestamp"  TIMESTAMP NOT NULL'
+			"timestamp"  TIMESTAMP NOT NULL',
+		'movedCurrent'=>'
+			"inode"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+			"prevParent"  integer NOT NULL,
+			FOREIGN KEY ("prevParent") REFERENCES "fileTree" ("inode")',
+		'deletedCurrent'=>'
+			"name"  VARCHAR(256) NOT NULL,
+			"parent"  integer NOT NULL',
 	);
+	function __construct(&$base){
+		parent::__construct($base);
+		
+		//> dropping databases ended with current
+		$this->base->exec('delete from `movedCurrent` where 1;');
+		$this->base->exec('delete from `deletedCurrent` where 1;');
+	}
 	public $inodes=array();
 	function load(){
 		$res=$this->queries->GetTree->execute();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=$row;//!< it looks like here I need & (a reference) here but id doesn't work by unknown reason
+			$this->inodes[$row->inode]=$row;// it looks like here I need & (a reference) here but id doesn't work by unknown reason
 		}
 		$this->queries->getTree->closeCursor();
 	}
@@ -90,8 +91,9 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		$arr=array();
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
-			$this->inodes[$row->inode]=$row;//!< it looks like here i need & (a reference) here but id doesn't work by unknown reason
-			$arr[$row->inode]=&$this->inodes[$row->inode];
+			$this->inodes[$row->inode]=&$row;//it looks like i need & (a reference) here but id doesn't work by unknown reason
+			//$arr[$row->inode]=&$this->inodes[$row->inode];
+			$arr[$row->inode]=$this->inodes[$row->inode];
 		}
 		$this->queries->getChildren->closeCursor();
 		return $arr;
@@ -120,25 +122,27 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		echo "saving added....\n<br/>";
 		foreach($this->added as &$node){
 			//new dBug(array('inode'=>$node->inode,'parent'=>$node->parent,'hash'=>$node->hash,'pathhash'=>$node->pathhash,'name'=>$node->name));
-			$res=$this->queries->addFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
+			$res=$this->queries->upsertFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
 		}
 	}
 	function saveChanged(){
 		echo "saving changed....\n<br/>";
 		foreach($this->changed as &$node){
-			$res=$this->queries->addFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
+			$res=$this->queries->upsertFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
 		}
 	}
 	function saveMoved(){
 		echo "saving moved....\n<br/>";
 		foreach($this->moved as &$node){
-			$res=$this->queries->addFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
+			$res=$this->queries->upsertFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
+			$res=$this->queries->addFileToMoved->execute(array($node->inode,$node->prevParent));
 		}
 	}
 	function saveDeleted(){
 		echo "removing deleted....\n<br/>";
 		foreach($this->deleted as &$node){
 			$res=$this->queries->deleteFileFromTree->execute(array($node->inode));
+			$res=$this->queries->addFileToDeleted->execute(array($node->name,$node->parent));
 		}
 	}
 	function makeCommitRecord($time=0){
@@ -165,17 +169,17 @@ class FileTreeItem implements IFileTreeItem{
 		//echo "the dir is:".$dir."\n";
 		//echo "the object path is:".$dir+"/"+$name."\n";
 		echo "constructing ".$file->getPathname()."<br/>\n";
-		//if(!$parent)$parent=&$this;
 		if(!$parent)throw new Exception("file has no parent. Serious bug!!!");
-		
-		
 		$this->name=$file->getFilename();
-		/*$this->inode=$file->getInode();
+		
+		/*
+		$this->inode=$file->getInode();
 		$this->mtime=$file->getMTime();
 		$this->ctime=$file->getCTime();
 		$this->size=$file->getSize();
 		$this->uid=$file->getOwner();*/
 		foreach(static::$attributesForHashing as $getter=>&$atrName)$this->$atrName=$file->$getter();
+		//good style and flexibility makes overhead
 		
 		if(!$this->inode){
 			//!in windows $file->getInode() returns 0
@@ -229,7 +233,7 @@ class FileTreeDir extends FileTreeItem implements IFileTreeDir{
 	function __construct(RecursiveDirectoryIterator  &$file,IFileTreeDir &$parent){
 		parent::__construct($file,$parent);
 		$this->path=$file->getPathname();
-		new dBug($this->path);
+		//new dBug($this->path);
 		$this->childrenIter=$file->getChildren();
 	}
 	function process(){
@@ -287,7 +291,7 @@ function drawHierarchy(&$inodelist){
 }
 
 /*!
-	class representing a directory with backup functionality
+	a class representing a directory with backup functionality
 	not for direct usage
 */
 class FileTreeBackupDir extends FileTreeDir{
@@ -328,7 +332,6 @@ class FileTreeBackupDir extends FileTreeDir{
 		new dBug($children);*/
 		
 		foreach($this->childrenIter as $child){
-			//if($child->isDot())continue;
 			if($child->isDir()){
 				$child=new static($child,$this);
 			}
@@ -340,7 +343,7 @@ class FileTreeBackupDir extends FileTreeDir{
 			if(isset($children[$child->inode])){
 				echo "There is element of children with inode {$child->inode}\n<br/>";
 				echo "hash is ".$child->hash." cached hash is {$children[$child->inode]->hash}\n<br/>";
-				new dBug($this->index->inodes[$child->inode]);
+				//new dBug($this->index->inodes[$child->inode]);
 				
 				if($children[$child->inode]->hash!=$child->hash){
 					//changed
@@ -362,19 +365,22 @@ class FileTreeBackupDir extends FileTreeDir{
 				echo "file {$child->name} ({$child->inode}) was <font color='green'>added</font> to folder $this->name ({$this->inode})\n<br/>\n";
 				//$this->index->added[$child->inode]=&$child;//TODO:why does the reference cause terrible errors in logic?
 				$this->index->added[$child->inode]=$child;
+				
 			}
+			
+			// put into index an actual object after index was used
 			$this->index->inodes[$child->inode]=$child;
 			static::processChild($child);
 		}
 		
 		/*echo "after\n<br/>";
 		new dBug($children);
-		var_dump($this->index);
-		var_dump($this->index->added);*/
+		//var_dump($this->index);
+		//var_dump($this->index->added);*/
 		
 		foreach($children as $inode=>$cachedChild){
 			echo "file {$cachedChild->name} ({$cachedChild->inode}) was deleted\n<br/>\n";
-			new dBug($cachedChild);
+			//new dBug($cachedChild);
 			//$this->index->deleted[$inode]=&$cachedChild;//TODO:why does the reference cause terrible errors in logic?
 			$this->index->deleted[$inode]=$cachedChild;
 		}
@@ -384,13 +390,11 @@ class FileTreeBackupDir extends FileTreeDir{
 	function processChild(IFileTreeItem &$fChild){
 		echo "processing child {$fChild->name} ({$fChild->inode}) of {$this->name} ({$this->inode})\n<br/>\n";
 		
-		/*echo 'var_dump($this->index->inodes)';
-		var_dump($this->index->inodes);
-		echo 'var_dump($this->index)';
-		var_dump($this->index);*/
-		drawHierarchy($this->index->added);
-		
-		
+		/*echo '//var_dump($this->index->inodes)';
+		//var_dump($this->index->inodes);
+		echo '//var_dump($this->index)';
+		//var_dump($this->index);*/
+		//drawHierarchy($this->index->added);
 		
 		$fChild->process();
 		echo "<hr color='red'/>";
@@ -400,7 +404,7 @@ class FileTreeBackupDir extends FileTreeDir{
 	}
 };
 /*!
-	class representing a plugin for backuping file tree
+	a class representing a plugin for backuping file tree
 	takes array of adresses of roots of the backup
 */
 class FileTreeBackuper implements IBackuper{
@@ -427,7 +431,8 @@ class FileTreeBackuper implements IBackuper{
 		foreach($this->roots as &$root){
 			$root->process();
 		}
-		drawHierarchy($this->index->added);
+
+		//drawHierarchy($this->index->added);
 		echo "<hr color='purple'/>";
 		static::detectMoved();
 		echo "<hr color='magenta'/>";
@@ -452,17 +457,20 @@ class FileTreeBackuper implements IBackuper{
 	private function detectMoved(){
 		echo "<hr color='lemonchiffon'/>Detecting moved....<br/>";
 		foreach($this->index->deleted as $inode=>&$node){
-			new dBug($node);
+			//new dBug($node);
 			if(isset($this->index->added[$inode])){
-				var_dump($this->index->added[$inode]);
-				var_dump($this->index->inodes[$inode]);
-				var_dump($node);
+				//var_dump($this->index->inodes[$inode]);
+				//var_dump($this->index->added[$inode]);
+				//var_dump($this->index->deleted[$inode]);
+				//var_dump($node);
 				if($this->index->added[$inode]->pathhash!=$node->pathhash){
 					//moved
 					//var_dump($this->index->changed[$node->parent]);
 					echo "file {$node->name} ({$node->inode}) was moved\n<br/>\n";
 					//$this->index->moved[$node->inode]=&$node;//TODO:why does the reference cause terrible errors in logic?
-					$this->index->moved[$inode]=$node;
+					$this->index->moved[$inode]=$this->index->added[$inode];
+					$this->index->moved[$inode]->prevParent=$this->index->deleted[$inode]->parent;
+					//$this->index->moved[$inode]->prevPathhash=$this->index->deleted[$inode]->pathhash;
 					unset($this->index->added[$inode]);
 					unset($this->index->deleted[$inode]);
 				}else{
@@ -470,6 +478,7 @@ class FileTreeBackuper implements IBackuper{
 				}
 			}
 		}
+		//var_dump($this->index->moved);
 		echo "<hr color='lemonchiffon'/>";
 	}
 	function needBackup(){
@@ -478,12 +487,14 @@ class FileTreeBackuper implements IBackuper{
 	
 	private function archivateAdded(){
 		foreach($this->index->added as $inode=>&$node){
-			echo "archivating ".$this->index->inodes[$node->parent]->path.'/'.$node->name.' as '.static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name.'</br>';
+			//var_dump($this->index->inodes[$node->parent]);
+			echo "archivating ".$this->index->inodes[$node->parent]->path.'/'.$node->name.
+			' as '.static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name.'</br>';
 			if($node instanceof IFileTreeDir){
 				$this->zip->addEmptyDir(static::filesDir.$node->relPath);
 				continue;
 			}
-			var_dump($node);
+			//var_dump($node);
 			//var_dump($this->index->inodes[$node->parent]);
 			if(!$this->zip->addFile(
 				$this->index->inodes[$node->parent]->path.'/'.$node->name,
@@ -493,7 +504,18 @@ class FileTreeBackuper implements IBackuper{
 		}
 	}
 	private function archivateChanged(){
-		static::archivateAdded();//temporary, later will be replaced with saving patches for source code files
+		//! temporary it has practically the same implementation as archivateAdded but later we will add diff for text-based files
+		foreach($this->index->changed as $inode=>&$node){
+			echo "archivating ".$this->index->inodes[$node->parent]->path.'/'.$node->name.' as '.static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name.'</br>';
+			if($node instanceof IFileTreeDir){
+				continue;
+			}
+			if(!$this->zip->addFile(
+				$this->index->inodes[$node->parent]->path.'/'.$node->name,
+				static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name)
+			)throw new Exception("Cannot add file to archive"); 
+			
+		}
 	}
 }
 ?>
