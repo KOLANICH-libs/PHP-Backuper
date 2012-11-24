@@ -69,7 +69,7 @@ class Backuper{
 						$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
 					}
 					catch(Exception $err){
-						echo 'Plugin '.$plnm.'failed to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
+						echo 'Plugin '.$plnm.' failed to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
 					}
 				}
 			}

@@ -1,5 +1,7 @@
 <?
-include_once __DIR__.'/../Sabre/autoload.php';
+//include_once __DIR__.'/../Sabre/autoload.php';
+include_once __DIR__.'/../Sabre/DAV/Client.php';
+include_once __DIR__.'/../Sabre/DAV/Exception.php';
 /*!
 	Uploads the backup to any WebDAV server using login and password
 	it is insecure to store login and password on the server so oauth uploaders are preffered
@@ -17,7 +19,7 @@ class WebDAVUploader implements IUploader{
 		static::verifyServerAndInitConnection($server,$login,$pass,$dir);
 	}
 	function verifyServerAndInitConnection($server,$username,$pass,$dir){
-		$webdav = new Sabre_DAV_Client(array(
+		$webdav = new Sabre\DAV\Client(array(
 			'baseUri' => $server,
 			'userName' => $username,
 			'password' => $pass,
