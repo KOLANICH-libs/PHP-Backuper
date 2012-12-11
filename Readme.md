@@ -23,6 +23,8 @@ SabreDAV - https://github.com/KOLANICH/SabreDAV - for WebDAVUploader
 
 DropboxUploader - https://github.com/KOLANICH/DropboxUploader - for DropboxSimpleUploader
 
+MegaCloud SDK - https://www.megacloud.com/developers/ajax/sdk_download?type=1 - for MegaCloud uploads - unpack sdk subfolder and rename to MegaCloud
+
 Modules folder structure
 ---
 There is a folder, where we store the modules, somewhere in the server. Let's call it 'modules' for example.
@@ -42,7 +44,12 @@ modules
    |
    |---DropboxUploader______
    |                  |    |
-   ...               ...  DropboxUploader.php
+   |              ...  DropboxUploader.php
+   |---MegaCloud____________________________
+   |            |            |             |
+   |  MCConnection.php   MCManager.php    ...
+   |
+  ... 
 ~~~
 
 Backup main workflow
