@@ -1,5 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$a00010.html" title="IBackuper" alt="" coords="5,32,85,61"/>
-<area shape="rect" id="node3" href="$a00006.html" title="class representing a plugin for backuping file tree takes array of adresses of roots of the backup..." alt="" coords="133,5,256,35"/>
-<area shape="rect" id="node5" href="$a00015.html" title="Makes backup of MySQL database in format similar to mysqldump." alt="" coords="135,59,255,88"/>
-</map>

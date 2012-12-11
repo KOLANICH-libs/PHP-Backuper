@@ -1,6 +1,0 @@
-<map id="IUploader" name="IUploader">
-<area shape="rect" id="node3" href="$a00003.html" title="Uploads the backup to Dropbox using login (e&#45;mail) and password it is insecure to store them on the s..." alt="" coords="5,158,179,295"/>
-<area shape="rect" id="node5" href="$a00004.html" title="This plugin is for testing exceptions in plugins initialization phase." alt="" coords="203,175,357,278"/>
-<area shape="rect" id="node7" href="$a00016.html" title="Uploads the backup to SugarSync using login (e&#45;mail) and password also you will need accessKeyId and ..." alt="" coords="381,158,555,295"/>
-<area shape="rect" id="node9" href="$a00017.html" title="Uploads the backup to any WebDAV server using login and password it is insecure to store login and pa..." alt="" coords="579,158,789,295"/>
-</map>

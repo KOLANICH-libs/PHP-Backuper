@@ -1,5 +1,0 @@
-<map id="FileTreeItem" name="FileTreeItem">
-<area shape="rect" id="node5" href="$a00008.html" title="a class representing a folder with some basic folder functionality such as expanding children..." alt="" coords="24,414,155,586"/>
-<area shape="rect" id="node2" href="$a00013.html" title="an interface representing a node of file tree with some basic folder functionality such as hashing..." alt="" coords="41,6,137,109"/>
-<area shape="rect" id="node7" href="$a00005.html" title="class representing a directory with backup functionality not for direct usage" alt="" coords="5,635,173,842"/>
-</map>
