@@ -69,7 +69,8 @@ class Backuper{
 						$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
 					}
 					catch(Exception $err){
-						echo 'Plugin '.$plnm.' failed to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
+						echo 'Plugin '.$plnm.' <font color="red">FAILED</font> to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
+						new dBug($err);
 					}
 				}
 			}
@@ -144,6 +145,7 @@ class Backuper{
 				echo "preparing backuping plugin $name <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
 				echo 'preparing backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err."\n<br/>";
+				new dBug($err);
 			}
 
 		}
@@ -163,6 +165,7 @@ class Backuper{
 				echo "backuping plugin $name <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
 				echo $name.' backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err->getMessage()."\n<br/>";
+				new dBug($err);
 			}
 		}
 	}
@@ -181,6 +184,7 @@ class Backuper{
 				$uploader->upload($this->zipFileName,$this->zipFileShortName);
 			}catch(Exception $err){
 				echo $uplnm.' uploading <font color="red">FAILED</font>: '.get_class($err).':'.$err->getCode().':'.$err-getMessage()."\n<br/>";
+				new dBug($err);
 				$uploadsFailed++;
 			}
 			echo $uplnm.' uploading <font color="green">succeed</font>\n<br/>';
