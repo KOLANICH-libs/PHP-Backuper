@@ -1,0 +1,59 @@
+{
+	"name" : "KOLANICH/backuper",
+	"type" : "library",
+	"description" : "framework which will help you making (incremental) backups of your site.",
+	"keywords" : ["backup", "incremental", "pure php", "files", "sql", "DropBox", "WebDav", "SugarSync", "Yandex.Disk"],
+	"homepage" : "https://github.com/KOLANICH/PHP-Backuper",
+	"license" : "BSD-3-Clause",
+	"authors" : [{
+			"name" : "KOLANICH",
+			"homepage" : "https://github.com/KOLANICH",
+			"role" : "Developer"
+		}
+	],
+	"require" : {
+		"php" : ">=5.4.0",
+		"ext-Reflection" : "*",
+		"ext-zip" : "*",
+		"ext-PDO" : "*",
+		"ext-pdo_sqlite" : "*",
+		"ext-SPL" : "*"
+	},
+	"suggest" : {
+		"KOLANICH/DropboxUploader" : "for DropboxSimpleUploader plugin which uploades files to Dropbox using your login and password",
+		"ext-pdo_mysql" : "for MySQLBackuper which is used for making backup (now it is non-incremental and backups only table structure and data) of your MySQL-compatible DB",
+		"sabre/dav" : "for WebDav upload"
+	},
+	"require-dev" : {
+		"KOLANICH/dBug" : "*"
+	},
+	"support" : {
+		"issues" : "https://github.com/KOLANICH/PHP-Backuper/issues"
+	},
+	"autoload" : {
+		"classmap" : [
+			"Backuper.php"
+		]
+	},
+	"repositories" : [
+		{
+			"type" : "package",
+			"package" : {
+				"name" : "KOLANICH/DropboxUploader",
+				"version" : "1.2.3",
+				"source" : {
+					"type" : "git",
+					"url" : "https://github.com/KOLANICH/DropboxUploader.git",
+					"reference" : "master"
+				},
+				"autoload" : {
+					"classmap" : ["DropboxUploader.php"]
+				}
+			}
+		},
+		{
+			"type" : "git",
+			"url" : "https://github.com/KOLANICH/SabreDAV.git"
+		}
+	]
+}
