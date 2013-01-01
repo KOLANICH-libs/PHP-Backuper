@@ -34,17 +34,19 @@ class FileTreeBackuperIndex extends BackuperIndex{
 	public $base=null;
 	//index
 	//patch to current state
+	const indexPrefix="FileTreeBackuper_";
 	public $moved=array(),$deleted=array(),$changed=array(),$added=array();
 	//public $modified=array();
 	public $ignores=array();
 	static $queriesTemplates=array(
-		"getTree"=>'SELECT * FROM `fileTree`;',
-		"getChildren"=>"SELECT * FROM `fileTree` where `parent`=?;",
-		"upsertFileToTree"=>"INSERT INTO `fileTree` VALUES (:inode, :parent, :hash, :pathhash, :name);",
-		"deleteFileFromTree"=>"DELETE FROM `fileTree` WHERE `inode`=:inode;",
-		"addCommit"=>"INSERT INTO `commits` (`timestamp`) VALUES (:time);",
-		"addFileToMoved"=>"INSERT INTO `movedCurrent` VALUES (:inode,:prevParent);",
-		"addFileToDeleted"=>"INSERT INTO `deletedCurrent` VALUES (:name,:parent);",
+		"getTree"=>'SELECT * FROM `%PR%fileTree`;',
+		"getChildren"=>"SELECT * FROM `%PR%fileTree` where `parent`=?;",
+		"getIgnores"=>"SELECT * FROM `%PR%ignores`;",
+		"upsertFileToTree"=>"INSERT INTO `%PR%fileTree` VALUES (:inode, :parent, :hash, :pathhash, :name);",
+		"deleteFileFromTree"=>"DELETE FROM `%PR%fileTree` WHERE `inode`=:inode;",
+		"addCommit"=>"INSERT INTO `%PR%commits` (`timestamp`) VALUES (:time);",
+		"addFileToMoved"=>"INSERT INTO `%PR%movedCurrent` VALUES (:inode,:prevParent);",
+		"addFileToDeleted"=>"INSERT INTO `%PR%deletedCurrent` VALUES (:name,:parent);",
 	);
 	
 	/*!
@@ -58,7 +60,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 			"pathhash"  INTEGER NOT NULL,
 			"name"  VARCHAR(256) NOT NULL,
 			PRIMARY KEY ("inode") ON CONFLICT REPLACE,
-			FOREIGN KEY ("parent") REFERENCES "fileTree" ("inode")
+			FOREIGN KEY ("parent") REFERENCES "%PR%fileTree" ("inode")
 			UNIQUE ("inode") ON CONFLICT REPLACE,
 			UNIQUE ("hash") ON CONFLICT REPLACE,
 			UNIQUE ("pathhash") ON CONFLICT REPLACE',
@@ -69,7 +71,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		'movedCurrent'=>'
 			"inode"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 			"prevParent"  integer NOT NULL,
-			FOREIGN KEY ("prevParent") REFERENCES "fileTree" ("inode")',//!<to mantain moves
+			FOREIGN KEY ("prevParent") REFERENCES "%PR%fileTree" ("inode")',//!<to mantain moves
 		'deletedCurrent'=>'
 			"name"  VARCHAR(256) NOT NULL,
 			"parent"  integer NOT NULL',//!<to mantain deletes
@@ -78,18 +80,34 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		parent::__construct($base);
 		
 		//! dropping databases ended with current
-		$this->base->exec('delete from `movedCurrent` where 1;');
-		$this->base->exec('delete from `deletedCurrent` where 1;');
+		//! @todo: should i add a special stage to BackuperIndex using arrays?
+		$this->base->exec('delete from `'.static::indexPrefix.'movedCurrent` where 1;');
+		$this->base->exec('delete from `'.static::indexPrefix.'deletedCurrent` where 1;');
 	}
 	public $inodes=array();
 	function load(){
-		$res=$this->queries->GetTree->execute();
+		//commented out because it could be mo rationally to load on demand
+		/*$res=$this->queries->getTree->execute();
+		new dBug($res);
 		while($row=$this->queries->getChildren->fetchObject()){
 			convertNodeFromBase($row);
 			$this->inodes[$row->inode]=$row;// it looks like here I need & (a reference) here but id doesn't work by unknown reason
 		}
-		$this->queries->getTree->closeCursor();
+		$this->queries->getTree->closeCursor();*/
+		$this->queries->getIgnores->execute();
+		$this->ignores=$this->queries->getIgnores->fetchAll(PDO::FETCH_COLUMN);
+		$this->queries->getIgnores->closeCursor();
 	}
+	
+	function checkIsIgnored($path){
+		foreach($this->ignores as $ignoreRule){
+			if(preg_match($ignoreRule,$path)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	function loadChildren(&$parent){
 		$res=$this->queries->getChildren->execute(array($parent));
 		$arr=array();
@@ -125,6 +143,9 @@ class FileTreeBackuperIndex extends BackuperIndex{
 	function saveAdded(){
 		echo "saving added....\n<br/>";
 		foreach($this->added as &$node){
+			/// very important
+			//if you get here error about no disk space it can be REALLY FREE SPACE ON SYSTEM DISK (even though php is installed not to system disk and temp moved to another disk...)
+			//try to run ccleaner to make some empty space in system disk
 			//new dBug(array('inode'=>$node->inode,'parent'=>$node->parent,'hash'=>$node->hash,'pathhash'=>$node->pathhash,'name'=>$node->name));
 			$res=$this->queries->upsertFileToTree->execute(array($node->inode,$node->parent,$node->hash,$node->pathhash,$node->name));
 		}
@@ -331,6 +352,13 @@ class FileTreeBackupDir extends FileTreeDir{
 		new dBug($children);*/
 		
 		foreach($this->childrenIter as $child){
+		
+			if($this->index->checkIsIgnored($child->getFilename())){
+				//!@bug ignores feature works inefficiently now b'cause getFilename is called twice
+				echo $child->getFilename()." <font color='purple'>ignored</font><br/>\n";
+				continue;
+			}
+			
 			if($child->isDir()){
 				$child=new static($child,$this);
 			}
@@ -364,7 +392,6 @@ class FileTreeBackupDir extends FileTreeDir{
 				echo "file {$child->name} ({$child->inode}) was <font color='green'>added</font> to folder $this->name ({$this->inode})\n<br/>\n";
 				//$this->index->added[$child->inode]=&$child;//TODO:why does the reference cause terrible errors in logic?
 				$this->index->added[$child->inode]=$child;
-				
 			}
 			
 			// put into index an actual object after index was used
@@ -385,7 +412,8 @@ class FileTreeBackupDir extends FileTreeDir{
 		}
 		echo "<hr color='green'/>";
 	}
-
+	
+	
 	function processChild(IFileTreeItem &$fChild){
 		echo "processing child {$fChild->name} ({$fChild->inode}) of {$this->name} ({$this->inode})\n<br/>\n";
 		
@@ -394,6 +422,8 @@ class FileTreeBackupDir extends FileTreeDir{
 		echo '//var_dump($this->index)';
 		//var_dump($this->index);*/
 		//drawHierarchy($this->index->added);
+
+		
 		
 		$fChild->process();
 		echo "<hr color='red'/>";

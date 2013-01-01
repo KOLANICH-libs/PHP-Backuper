@@ -25,6 +25,7 @@ class BackuperIndex implements IBackuperIndex{
 	public $base=null;
 	public $queries;
 	const createTableQueryTempl='CREATE TABLE "%s" (%s);';
+	const indexPrefix="";
 	static $queriesTemplates=array();//!< contains the queries to make prepared statements
 	static $baseStructureBuildQuery=array();//!< contains the databases' structure
 	
@@ -46,6 +47,7 @@ class BackuperIndex implements IBackuperIndex{
 		
 		$res=$this->checkInitializedAndInitMissing();
 		static::prepareQueries();
+		static::load();
 		//var_dump($this);
 	}
 	
@@ -56,7 +58,7 @@ class BackuperIndex implements IBackuperIndex{
 		$this->queries=new stdClass;
 		if(empty(static::$queriesTemplates))return;
 		foreach(static::$queriesTemplates as $queryName=>&$query){
-			$this->queries->$queryName=$this->base->prepare($query);
+			$this->queries->$queryName=$this->base->prepare(str_replace("%PR%",static::indexPrefix,$query));
 		}
 	}
 	
@@ -70,8 +72,9 @@ class BackuperIndex implements IBackuperIndex{
 			unset($r);
 		}
 		foreach(static::$baseStructureBuildQuery as $tblName=>&$structure){
+			$tblName=static::indexPrefix.$tblName;
 			if(empty($tables[$tblName])){
-				$res1=$this->base->query(sprintf(self::createTableQueryTempl,$tblName,$structure));
+				$res1=$this->base->query(sprintf(self::createTableQueryTempl,$tblName,str_replace("%PR%",static::indexPrefix,$structure)));
 			}
 		}
 		unset($tables);
