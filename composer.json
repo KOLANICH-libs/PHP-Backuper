@@ -17,7 +17,10 @@
 		"ext-zip" : "*",
 		"ext-PDO" : "*",
 		"ext-pdo_sqlite" : "*",
-		"ext-SPL" : "*"
+		"ext-SPL" : "*",
+		"ext-mhash":"*",
+		"ext-pcre":"*",
+		"ext-hash":"*"
 	},
 	"suggest" : {
 		"KOLANICH/DropboxUploader" : "for DropboxSimpleUploader plugin which uploades files to Dropbox using your login and password",
@@ -52,7 +55,7 @@
 			}
 		},
 		{
-			"type" : "git",
+			"type" : "vcs",
 			"url" : "https://github.com/KOLANICH/SabreDAV.git"
 		}
 	]

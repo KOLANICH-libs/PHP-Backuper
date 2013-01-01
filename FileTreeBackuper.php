@@ -46,6 +46,10 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		"addFileToMoved"=>"INSERT INTO `movedCurrent` VALUES (:inode,:prevParent);",
 		"addFileToDeleted"=>"INSERT INTO `deletedCurrent` VALUES (:name,:parent);",
 	);
+	
+	/*!
+	
+	*/
 	static $baseStructureBuildQuery=array(
 		'fileTree'=>'
 			"inode"  INTEGER NOT NULL,
@@ -58,22 +62,22 @@ class FileTreeBackuperIndex extends BackuperIndex{
 			UNIQUE ("inode") ON CONFLICT REPLACE,
 			UNIQUE ("hash") ON CONFLICT REPLACE,
 			UNIQUE ("pathhash") ON CONFLICT REPLACE',
-		'ignores'=>'"ignore"  varchar(512) NOT NULL',
+		'ignores'=>'"ignore"  varchar(512) NOT NULL',//!<files to ignore, regexes in pcre format
 		'commits'=>'
 			"id"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 			"timestamp"  TIMESTAMP NOT NULL',
 		'movedCurrent'=>'
 			"inode"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 			"prevParent"  integer NOT NULL,
-			FOREIGN KEY ("prevParent") REFERENCES "fileTree" ("inode")',
+			FOREIGN KEY ("prevParent") REFERENCES "fileTree" ("inode")',//!<to mantain moves
 		'deletedCurrent'=>'
 			"name"  VARCHAR(256) NOT NULL,
-			"parent"  integer NOT NULL',
+			"parent"  integer NOT NULL',//!<to mantain deletes
 	);
 	function __construct(&$base){
 		parent::__construct($base);
 		
-		//> dropping databases ended with current
+		//! dropping databases ended with current
 		$this->base->exec('delete from `movedCurrent` where 1;');
 		$this->base->exec('delete from `deletedCurrent` where 1;');
 	}
@@ -172,12 +176,7 @@ class FileTreeItem implements IFileTreeItem{
 		if(!$parent)throw new Exception("file has no parent. Serious bug!!!");
 		$this->name=$file->getFilename();
 		
-		/*
-		$this->inode=$file->getInode();
-		$this->mtime=$file->getMTime();
-		$this->ctime=$file->getCTime();
-		$this->size=$file->getSize();
-		$this->uid=$file->getOwner();*/
+		
 		foreach(static::$attributesForHashing as $getter=>&$atrName)$this->$atrName=$file->$getter();
 		//good style and flexibility makes overhead
 		

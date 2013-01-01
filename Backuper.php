@@ -3,8 +3,8 @@ require_once("BackuperIndex.php");
 
 interface IBackuper{
 	/*!
-	initializes backuper plugin with prefs
-	$prefs can be anything your plugin will understand
+	initializes backuper plugin with prefs for it
+	@param mixed $prefs can be anything your plugin will understand
 	*/
 	function __construct($prefs);
 	/*!
@@ -19,11 +19,12 @@ interface IBackuper{
 	makes opperations needed for backup for example builds graph or looking for modified files
 	takes database object to store index data
 	usually you will want to use BackuperIndex subclass to mantain base
-	@param PDO &$base
+	@param PDO &$base opened db connection, don't close it (you can close it but must reopen .... may be in another base file, but it is strongly unrecommended to do so)
 	*/
 	function prepareForBackup(&$base);
 	/*!
 	determines wheither backup is needed for this plugin
+	@returns boolean|integer does this plugin have work to do
 	*/
 	function needBackup();
 };
@@ -43,14 +44,18 @@ interface IUploader{
 	It doesn't (and mustn't) implement IBackuper because it is not a plugin.
 */
 class Backuper{
-	public $index, $roots=array();
-	static $archiveTempDir;
-	static $indexFileName="backupFilesIndex.sqlite";
-	public $zip=null;
-	public $plugins;
+	public $index;
+	static $backupsDir;//!< folder
+	static $indexFileName="backupIndex.sqlite";//!< filename for database file (of course you can change it, don't forget to rename index file)
+	public $zip=null;//!< ZipArchive where will be everything packed
+	public $plugins;//!< here plugins will be stored, look initPlugins
+	/*!
+	@param array $prefs preferences (auth information, some other, etc...) for plugins
+		array("pluginName"=>array("pref1"=>"ololo","pref2"=>"trololo"))
+	*/
 	function __construct($prefs){
 		echo "consructing Backuper\n<br/>";
-		$filename=static::$archiveTempDir.'/'.static::$indexFileName;//because by reference
+		$filename=static::$backupsDir.'/'.static::$indexFileName;//because by reference
 		$this->index=new BackuperIndex($filename);
 		static::initPlugins($prefs);
 	}
@@ -112,7 +117,7 @@ class Backuper{
 		}
 		$this->zip=new ZipArchive;
 		$this->zipFileShortName=$time.".zip";
-		$this->zipFileName=static::$archiveTempDir.'/'.$this->zipFileShortName;
+		$this->zipFileName=static::$backupsDir.'/'.$this->zipFileShortName;
 		new dBug($this->zipFileName);
 		if(!$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE))throw new Exception("Cannot create archive");
 		//new dBug($this->zip);
@@ -131,7 +136,7 @@ class Backuper{
 		echo 'saving backup archive...<br/>';
 		static::save();
 		echo 'backup archive saved<br/>';
-		echo "<hr color='magenta'/>";
+		echo '<hr color="magenta"/>';
 	}
 	
 	/*!
@@ -142,7 +147,7 @@ class Backuper{
 		foreach($this->plugins->backup as $name=>&$backuper){
 			try{
 				$backuper->prepareForBackup($this->index->base);
-				echo "preparing backuping plugin $name <font color='green'>succeed</font>\n<br/>";
+				echo 'preparing backuping plugin '.$name." <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
 				echo 'preparing backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err."\n<br/>";
 				new dBug($err);
@@ -162,7 +167,7 @@ class Backuper{
 				if(isset($res)){
 					if(isset($res['comment']))$this->comment.=$res['comment'];
 				}
-				echo "backuping plugin $name <font color='green'>succeed</font>\n<br/>";
+				echo 'backuping plugin '.$name." <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
 				echo $name.' backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err->getMessage()."\n<br/>";
 				new dBug($err);
@@ -195,5 +200,5 @@ class Backuper{
 		//parent::save();
 	}
 }
-Backuper::$archiveTempDir=__DIR__;
+Backuper::$backupsDir=__DIR__;
 ?>
