@@ -119,7 +119,9 @@ class Backuper{
 		$this->zipFileShortName=$time.".zip";
 		$this->zipFileName=static::$backupsDir.'/'.$this->zipFileShortName;
 		new dBug($this->zipFileName);
-		if(!$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE))throw new Exception("Cannot create archive");
+		$zipOpeningRes=$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE);
+		if($zipOpeningRes !== TRUE)throw new Exception('Cannot create archive : '.$zipOpeningRes);
+		unset($zipOpeningRes);
 		//new dBug($this->zip);
 		//new dBug($this->zip);
 		
