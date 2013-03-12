@@ -103,6 +103,8 @@ class Backuper{
 			return 1;
 	}
 	
+	
+	
 	/*!
 	the method to be called by user to make backups
 	starts backup process
@@ -119,8 +121,8 @@ class Backuper{
 		$this->zipFileShortName=$time.".zip";
 		$this->zipFileName=static::$backupsDir.'/'.$this->zipFileShortName;
 		new dBug($this->zipFileName);
-		$zipOpeningRes=$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE);
-		if($zipOpeningRes !== TRUE)throw new Exception('Cannot create archive : '.$zipOpeningRes);
+		$zipOpeningRes=$this->zip->open($this->zipFileName,ZIPARCHIVE::OVERWRITE|ZIPARCHIVE::CREATE|ZIPARCHIVE::CHECKCONS);
+		if($zipOpeningRes !== TRUE)throw new Exception('Cannot create archive : '.$this->zip->getStatusString());
 		unset($zipOpeningRes);
 		//new dBug($this->zip);
 		//new dBug($this->zip);
@@ -133,7 +135,7 @@ class Backuper{
 		$this->zip->setArchiveComment($this->comment);
 		unset($this->comment);
 		static::backupIndex();	
-		if(!$this->zip->close())throw new Exception("Cannot close archive");
+		if(!$this->zip->close())throw new Exception("Cannot close archive: ".$this->zip->getStatusString());
 		$this->zip=null;
 		echo 'saving backup archive...<br/>';
 		static::save();
