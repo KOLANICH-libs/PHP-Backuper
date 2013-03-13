@@ -200,17 +200,16 @@ class FileTreeItem implements IFileTreeItem{
 		
 		foreach(static::$attributesForHashing as $getter=>&$atrName)$this->$atrName=$file->$getter();
 		//good style and flexibility makes overhead
-		
+		echo "size is ".$this->size."<br/>\n";
 		if(!$this->inode){
 			//!in windows $file->getInode() returns 0
 			//!so we have to make some bad kind of inode for debug purposes
 			$this->inode=unpack('L',md5(
 				$file->isDir().
-				("|!".$file->isLink()).
+				"|!".$file->isLink().
 				"|!".$this->name.
 				"|!".$this->ctime.
-				($file->isDir()?"":
-					//"|!".$file->getMTime().
+				($file->isDir()?"|!".$file->getPathname():
 					//"|!".$this->mtime.///why had i included it to inode?
 					"|!".$this->size
 				)
@@ -466,8 +465,8 @@ class FileTreeBackuper implements IBackuper{
 		static::detectMoved();
 		echo "<hr color='magenta'/>";
 	}
-	function makeBackup(&$zip){
-		$this->zip=&$zip;
+	function makeBackup(&$arch){
+		$this->arch=&$arch;
 		echo "archivation of changed...<br/>";
 		static::archivateChanged();
 		echo "archivating added...<br/>";
@@ -520,15 +519,16 @@ class FileTreeBackuper implements IBackuper{
 			echo "archivating ".$this->index->inodes[$node->parent]->path.'/'.$node->name.
 			' as '.static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name.'</br>';
 			if($node instanceof IFileTreeDir){
-				$this->zip->addEmptyDir(static::filesDir.$node->relPath);
+				$this->arch->addEmptyDir(static::filesDir.$node->relPath);
 				continue;
 			}
 			//var_dump($node);
 			//var_dump($this->index->inodes[$node->parent]);
-			if(!$this->zip->addFile(
-				$this->index->inodes[$node->parent]->path.'/'.$node->name,
-				static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name)
-			)throw new Exception("Cannot add file to archive"); 
+				$this->arch->addFile(
+					$this->index->inodes[$node->parent]->path.'/'.$node->name,
+					static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name
+				);
+			
 			
 		}
 	}
@@ -539,11 +539,9 @@ class FileTreeBackuper implements IBackuper{
 			if($node instanceof IFileTreeDir){
 				continue;
 			}
-			if(!$this->zip->addFile(
+			$this->arch->addFile(
 				$this->index->inodes[$node->parent]->path.'/'.$node->name,
-				static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name)
-			)throw new Exception("Cannot add file to archive"); 
-			
+				static::filesDir.$this->index->inodes[$node->parent]->relPath.'/'.$node->name);
 		}
 	}
 }

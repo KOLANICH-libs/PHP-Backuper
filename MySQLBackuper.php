@@ -33,13 +33,13 @@ class MySQLBackuper implements IBackuper{
 	function prepareForBackup(&$base){
 		
 	}
-	function makeBackup(&$zip){
+	function makeBackup(&$arch){
 		$result="";
 		foreach($this->bases as &$base){
 			$res=static::dumpDB($base);
 			$result.=$res["structure"]."\n".$res["data"]."\n";
 		}
-		$zip->addFromString( static::baseDir.'/'.static::baseName, $result );
+		$arch->addFromString( static::baseDir.'/'.static::baseName, $result );
 		return array("comment"=>"bases backed up");
 	}
 	function needBackup(){
