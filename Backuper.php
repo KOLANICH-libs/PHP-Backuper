@@ -74,7 +74,7 @@ class Backuper{
 	/*!
 		@param string $compStr in format "archiveType:compression"
 		tar.gz means tarball compressed with gzip and generates a file with 'tar.gz' extension
-		zip.gz means zip archive every file in it is compressed with gzip serparately and generates a file with 'gz.zip' extension
+		zip.gz means zip archive every file in it is compressed with gzip serparately
 		zip means zip archive without compression
 		see http://www.php.net/manual/en/phardata.compressfiles.php and http://php.net/manual/en/phar.compress.php for details
 	*/
