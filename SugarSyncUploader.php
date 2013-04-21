@@ -1,4 +1,4 @@
-<?
+<?php
 include_once __DIR__.'/../SugarSync/SugarSync.php';
 /*!
 	Uploads the backup to SugarSync using login (e-mail) and password

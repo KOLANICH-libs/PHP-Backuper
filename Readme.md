@@ -1,6 +1,7 @@
 PHP Backuper	{#mainpage}
 ===
-This is a framework which will help you making (incremental) backups of your site.
+This is a framework which will help you making (incremental) backups of your site and save it in remote or local locations, such as different cloud storages, FTP servers, e-mail, file sharing services, etc...
+Extremely useful for daily backup 
 The framework is written in pure php an can be used on free hostings with supported PHP version ( 5.4+) and was designed as extensible.
 Feel free to fork and modify it.
 
@@ -84,3 +85,9 @@ Uploaders
 Uploaders are responsible for upload resulting archive to different services such as DropBox, SugarSync, Google Drive, Yandex.Disk, etc.
 Each uploader must implement IUploader interface.
 
+Implemented modules (most of them ;)
+---
+* WebDAVUploader - will help you with uploading to [Yandex.Disk](http://help.yandex.com/disk/webdav.xml), [Box.com](https://support.box.com/entries/20359428-Does-Box-support-WebDAV) and [SkyDrive](https://skydrivesimpleviewer.codeplex.com/).
+Also you can use https://dav-pocket.appspot.com/ to access DropBox and http://otixo.com/ to access most of cloud storages through WebDav.
+* FileTreeBackuper - makes incremental backup of file tree
+* MySQLBackuper - makes backup of SQL database (structure + data), but there can be problems.

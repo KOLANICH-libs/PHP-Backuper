@@ -1,4 +1,4 @@
-<?
+<?php
 include_once(__DIR__.'/../DropboxUploader/DropboxUploader.php');
 /*!
 	Uploads the backup to Dropbox using login (e-mail) and password

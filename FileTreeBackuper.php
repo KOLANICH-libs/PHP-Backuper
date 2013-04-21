@@ -1,4 +1,4 @@
-<?
+<?php
 /*
 TODO:
 make root state be stored in base and arrays

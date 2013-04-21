@@ -1,4 +1,4 @@
-<?
+<?php
 //include_once __DIR__.'/../Sabre/autoload.php';
 include_once __DIR__.'/../Sabre/DAV/Client.php';
 include_once __DIR__.'/../Sabre/DAV/Exception.php';

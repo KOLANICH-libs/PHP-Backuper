@@ -1,4 +1,4 @@
-<?
+<?php
 /*!
 	Makes backup of MySQL database in format similar to mysqldump.
 	The code was taken from sypex dumper v 1.

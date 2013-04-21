@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("Backuper.php");
 $b=new Backuper(
 	array(
@@ -13,7 +13,14 @@ $b=new Backuper(
 				"login"=>"test@test.ru",
 				"pass"=>'test',
 				"dir"=>'/Backups'
-			)
+			),
+			/*'SugarSync'=>array( //now this doesn't work
+				"login"=>"test@test.ru",
+				"pass"=>'test',
+				"dir"=>'/Backups',
+				"accessKeyId"=>"AAAAAAAAAAAAAAAAAAAAAAAAAAA",
+				"privateAccessKey"=>"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			),*/
 		),
 		'backup'=>array(
 			"FileTree"=>array(
@@ -23,14 +30,6 @@ $b=new Backuper(
 				"base"=>new PDO('mysql:dbname=test;host=127.0.0.1',"test"),
 			),
 			//or "MySQL"=>new PDO('mysql:dbname=test;host=127.0.0.1',"root","",array(PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION)),
-			
-			/*'SugarSync'=>array( //now this doesn't work
-				"login"=>"test@test.ru",
-				"pass"=>'test',
-				"dir"=>'/Backups',
-				"accessKeyId"=>"AAAAAAAAAAAAAAAAAAAAAAAAAAA",
-				"privateAccessKey"=>"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-			),*/
 		)
 	)
 );

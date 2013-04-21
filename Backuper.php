@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("BackuperIndex.php");
 
 interface IBackuper{

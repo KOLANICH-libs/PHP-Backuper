@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*!
 	can take either string or PDO object
