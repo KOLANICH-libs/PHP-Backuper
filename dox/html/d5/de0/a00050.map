@@ -1,0 +1,4 @@
+<map id="IBackuperIndex" name="IBackuperIndex">
+<area shape="rect" id="node3" href="$d7/d46/a00002.html" title="A class for mantaining index." alt="" coords="5,158,221,399"/>
+<area shape="rect" id="node5" href="$de/d5e/a00007.html" title="{FileTreeBackuperIndex\n|+ $base\l+ indexPrefix\l+ $moved\l+ $deleted\l+ $changed\l+ $added\l+ $ignores\l+ $inodes\l+ $queriesTemplates\l+ $baseStructureBuildQuery\l|+ __construct()\l+ load()\l+ checkIsIgnored()\l+ loadChildren()\l+ needBackup()\l+ save()\l+ saveAdded()\l+ saveChanged()\l+ saveMoved()\l+ saveDeleted()\l+ makeCommitRecord()\l}" alt="" coords="20,449,207,863"/>
+</map>

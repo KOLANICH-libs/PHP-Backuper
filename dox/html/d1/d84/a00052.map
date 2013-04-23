@@ -1,0 +1,5 @@
+<map id="IFileTreeDir" name="IFileTreeDir">
+<area shape="rect" id="node5" href="$d4/dee/a00008.html" title="a class representing a folder with some basic folder functionality such as expanding children..." alt="" coords="24,310,155,482"/>
+<area shape="rect" id="node2" href="$d7/dd4/a00013.html" title="an interface representing a node of file tree with some basic folder functionality such as hashing..." alt="" coords="41,6,137,109"/>
+<area shape="rect" id="node7" href="$dd/dad/a00005.html" title="a class representing a directory with backup functionality not for direct usage" alt="" coords="5,531,173,738"/>
+</map>

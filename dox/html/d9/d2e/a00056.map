@@ -1,0 +1,6 @@
+<map id="IUploader" name="IUploader">
+<area shape="rect" id="node3" href="$d1/d7c/a00003.html" title="Uploads the backup to Dropbox using login (e&#45;mail) and password it is insecure to store them on the s..." alt="" coords="5,166,179,303"/>
+<area shape="rect" id="node5" href="$d0/d0b/a00004.html" title="This plugin is for testing exceptions in plugins initialization phase." alt="" coords="203,183,357,286"/>
+<area shape="rect" id="node7" href="$d7/d7a/a00016.html" title="Uploads the backup to SugarSync using login (e&#45;mail) and password also you will need accessKeyId and ..." alt="" coords="381,166,555,303"/>
+<area shape="rect" id="node9" href="$d4/d51/a00017.html" title="{WebDAVUploader\n|+ $dir\l+ $webDav\l# $prefs\l|+ __construct()\l+ verifyServerAndInitConnection()\l+ upload()\l}" alt="" coords="579,157,789,312"/>
+</map>

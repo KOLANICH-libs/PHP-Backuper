@@ -1,0 +1,4 @@
+<map id="BackuperIndex" name="BackuperIndex">
+<area shape="rect" id="node5" href="$de/d5e/a00007.html" title="{FileTreeBackuperIndex\n|+ $base\l+ indexPrefix\l+ $moved\l+ $deleted\l+ $changed\l+ $added\l+ $ignores\l+ $inodes\l+ $queriesTemplates\l+ $baseStructureBuildQuery\l|+ __construct()\l+ load()\l+ checkIsIgnored()\l+ loadChildren()\l+ needBackup()\l+ save()\l+ saveAdded()\l+ saveChanged()\l+ saveMoved()\l+ saveDeleted()\l+ makeCommitRecord()\l}" alt="" coords="20,449,207,863"/>
+<area shape="rect" id="node2" href="$da/d45/a00011.html" title="can take either string or PDO object if it is not BackuperIndex it will take PDO object, BackuperIndex will take either PDO or string, most likely string" alt="" coords="5,6,221,109"/>
+</map>
