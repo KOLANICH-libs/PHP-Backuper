@@ -16,7 +16,7 @@ class DropboxSimpleUploader implements IUploader{
 	}
 	function checkServerRequisites($mail,$pass,$dir){
 		$this->dropbox = new DropboxUploader($mail, $pass);
-		$this->dropbox->login();
+		$this->dropbox->login(true);
 		//$this->dropbox->uploadBuffer("test",$dir,"test");
 		$this->dir=$dir;
 	}

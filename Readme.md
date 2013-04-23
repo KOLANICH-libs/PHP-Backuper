@@ -1,6 +1,6 @@
 PHP Backuper	{#mainpage}
 ===
-This is a framework which will help you making (incremental) backups of your site and save it in remote or local locations, such as different cloud storages, FTP servers, e-mail, file sharing services, etc...
+This is a framework which will help you making (incremental) backups of your site, pack them to archive (every format that PHAR supports) and save it into remote or local locations, such as different cloud storages, FTP servers, e-mail, file sharing services, etc...
 Extremely useful for daily backup 
 The framework is written in pure php an can be used on free hostings with supported PHP version ( 5.4+) and was designed as extensible.
 Feel free to fork and modify it.
@@ -16,7 +16,7 @@ SQLite + its PDO driver
 
 dBug - https://github.com/KOLANICH/dBug - for debug output
 
-ZipArchive
+[PHAR](http://www.php.net/manual/en/phar.fileformat.php)
 
 MySQL + its PDO driver for MySQLBackuper
 
@@ -57,14 +57,14 @@ To make backup you'll need:
 ### Creating instance
 ~~~{.php}
 	new Backuper(
-		array(
-			"upload"=>array(
+		[
+			'upload'=>[
 				/*here should be a list of upload plugins (further uploaders)*/
-			),
-			'backup'=>array(
+			],
+			'backup'=>[
 				/*here should be a list of backup pluguns (further backupers)*/
-			)
-		)
+			]
+		]
 	);
 ~~~
 
@@ -73,6 +73,7 @@ To make backup you'll need:
 ### Making backup
 You need to call Backuper::makeBackup method.
 
+Look example.php for details.
 
 Backupers
 ---
@@ -87,7 +88,8 @@ Each uploader must implement IUploader interface.
 
 Implemented modules (most of them ;)
 ---
-* WebDAVUploader - will help you with uploading to [Yandex.Disk](http://help.yandex.com/disk/webdav.xml), [Box.com](https://support.box.com/entries/20359428-Does-Box-support-WebDAV) and [SkyDrive](https://skydrivesimpleviewer.codeplex.com/).
-Also you can use https://dav-pocket.appspot.com/ to access DropBox and http://otixo.com/ to access most of cloud storages through WebDav.
+* WebDAVUploader - will help you with uploading to [Yandex.Disk](http://help.yandex.com/disk/webdav.xml), [Box.com](https://support.box.com/entries/20359428-Does-Box-support-WebDAV), [SkyDrive](https://skydrivesimpleviewer.codeplex.com/) and other [WebDAV](https://ru.wikipedia.org/wiki/Webdav) services.
+Also you can use https://dav-pocket.appspot.com/ to access DropBox and http://otixo.com/ to access most of cloud storages through WebDAV.
+* DropboxSimpleUploader - will help you with uploading to [DropBox](https://www.dropbox.com/) using login and password.
 * FileTreeBackuper - makes incremental backup of file tree
-* MySQLBackuper - makes backup of SQL database (structure + data), but there can be problems.
+* MySQLBackuper - makes backup of SQL database (structure + data), but there can be problems. Also, you can possible to use it to backup bases other than MySQL, which are MySQL compatible and have PDO interface.

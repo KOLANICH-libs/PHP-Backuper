@@ -2,7 +2,7 @@
 	"name" : "KOLANICH/backuper",
 	"type" : "library",
 	"description" : "framework which will help you making (incremental) backups of your site.",
-	"keywords" : ["backup", "incremental", "pure php", "files", "sql", "DropBox", "WebDav", "SugarSync", "Yandex.Disk"],
+	"keywords" : ["backup", "incremental", "pure php", "files", "sql", "DropBox", "WebDav", "SugarSync", "Yandex.Disk","Box.com"],
 	"homepage" : "https://github.com/KOLANICH/PHP-Backuper",
 	"license" : "BSD-3-Clause",
 	"authors" : [{
@@ -14,7 +14,7 @@
 	"require" : {
 		"php" : ">=5.4.0",
 		"ext-Reflection" : "*",
-		"ext-zip" : "*",
+		"ext-PHAR" : "*",
 		"ext-PDO" : "*",
 		"ext-pdo_sqlite" : "*",
 		"ext-SPL" : "*",

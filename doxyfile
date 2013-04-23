@@ -1,4 +1,4 @@
-﻿# Doxyfile 1.8.2
+# Doxyfile 1.8.2
 
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
@@ -725,7 +725,7 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = ../public_html/modules/backuper/example.php
+EXAMPLE_PATH           = E:/public_html/modules/backuper/example.php
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

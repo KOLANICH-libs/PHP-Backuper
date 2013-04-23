@@ -137,6 +137,7 @@ class Backuper{
 					try{
 						if(!include_once ($plnm.".php"))throw new Exception('Plugin '.$plnm.' was not found');
 						$this->plugins->{$pltype}[$pluginName]=new $plnm($pluginPrefs);
+						echo 'Plugin '.$plnm.' <font color="green">was successfully initialized</font>'."\n".'<br/>';
 					}
 					catch(Exception $err){
 						echo 'Plugin '.$plnm.' <font color="red">FAILED</font> to initialize. : '.get_class($err).' : '.$err->getCode().' : '.$err->getMessage()."\n<br/>";
@@ -188,8 +189,6 @@ class Backuper{
 		new dBug($this->archFileName);
 		
 		$this->arch=new PharData($this->archFileName,0,$this->archiveFormat);
-		
-		
 		
 		
 		//$archOpeningRes=$this->arch->open($this->archFileName,ZIPARCHIVE::OVERWRITE|ZIPARCHIVE::CREATE|ZIPARCHIVE::CHECKCONS);
@@ -276,7 +275,7 @@ class Backuper{
 			try{
 				$uploader->upload($this->archFileName,$this->archFileShortName);
 			}catch(Exception $err){
-				echo $uplnm.' uploading <font color="red">FAILED</font>: '.get_class($err).':'.$err->getCode().':'.$err-getMessage()."\n<br/>";
+				echo $uplnm.' uploading <font color="red">FAILED</font>: '.get_class($err).':'.$err->getCode().':'.$err->getMessage()."\n<br/>";
 				new dBug($err);
 				$uploadsFailed++;
 			}
