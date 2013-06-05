@@ -80,7 +80,6 @@ Backupers
 Backupers are responsible for extracting data, packing them to archive and mantaining index.
 Each backuper must implement IBackuper interface.
 
-
 Uploaders
 ---
 Uploaders are responsible for upload resulting archive to different services such as DropBox, SugarSync, Google Drive, Yandex.Disk, etc.
@@ -91,5 +90,5 @@ Implemented modules (most of them ;)
 * WebDAVUploader - will help you with uploading to [Yandex.Disk](http://help.yandex.com/disk/webdav.xml), [Box.com](https://support.box.com/entries/20359428-Does-Box-support-WebDAV), [SkyDrive](https://skydrivesimpleviewer.codeplex.com/) and other [WebDAV](https://ru.wikipedia.org/wiki/Webdav) services.
 Also you can use https://dav-pocket.appspot.com/ to access DropBox and http://otixo.com/ to access most of cloud storages through WebDAV.
 * DropboxSimpleUploader - will help you with uploading to [DropBox](https://www.dropbox.com/) using login and password.
-* FileTreeBackuper - makes incremental backup of file tree
+* FileTreeBackuper - makes incremental backup of file tree. Supports ignores. Every ignore is a regex in FileTreeBackuper_ignores.
 * MySQLBackuper - makes backup of SQL database (structure + data), but there can be problems. Also, you can possible to use it to backup bases other than MySQL, which are MySQL compatible and have PDO interface.

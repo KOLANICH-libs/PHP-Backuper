@@ -12,7 +12,7 @@ interface IBackuper{
 	@param ZipArchive &$arch where backups will be packed to
 	
 	usually a backuper creates some subfolders in the archive and strores backup data in them, for example /base/MySQL for MySQLBackuper  or /files and /patches for FileTreeBackuper
-	@return array('comment'=>'string to be added to archive comment',...)
+	@return ['comment'=>[ something which can be serialized to JSON, it will be included to archive comment...]
 	*/
 	function makeBackup(&$arch);
 	/*!
@@ -197,12 +197,16 @@ class Backuper{
 		//new dBug($this->arch);
 		//new dBug($this->arch);
 		
-		$this->comment=$time."\n".date('g:i:s A D d.m.y',$time)."\n";
+		$this->comment=[];
+		$this->comment['timeStarted']=[$time,date('g:i:s A D d.m.y',$time)];
+		$time=time();
+		$this->comment['timePrepared']=[$time,date('g:i:s A D d.m.y',$time)];
 		
 		//! calling plugins
 		static::makeBackups();
+		$this->comment['timeBackuped']=[$time,date('g:i:s A D d.m.y',$time)];
 		
-		$this->arch->setMetadata($this->comment);
+		$this->arch->setMetadata(json_encode($this->comment,JSON_PRETTY_PRINT));
 		//$this->arch->setArchiveComment($this->comment);
 		unset($this->comment);
 		static::backupIndex();	
@@ -249,14 +253,17 @@ class Backuper{
 	function makeBackups(){
 		if(empty($this->plugins->backup))return;
 		foreach($this->plugins->backup as $name=>&$backuper){
+			$this->comment[$name]=[];
 			try{
 				$res=$backuper->makeBackup($this->arch);
 				if(isset($res)){
-					if(isset($res['comment']))$this->comment.="\n".$res['comment'];
+					if(isset($res['comment']))$this->comment[$name]=$res['comment'];
 				}
+				$this->comment[$name]['state']='OK';
 				echo 'backuping plugin '.$name." <font color='green'>succeed</font>\n<br/>";
 			}catch(Exception $err){
 				echo $name.' backuping plugin '.$name.' <font color="red">FAILED</font>: '.$err->getMessage()."\n<br/>";
+				$this->comment[$name]['state']='FAILED: '.$err->getMessage();
 				new dBug($err);
 			}
 		}

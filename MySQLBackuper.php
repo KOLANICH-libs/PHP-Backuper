@@ -40,7 +40,7 @@ class MySQLBackuper implements IBackuper{
 			$result.=$res["structure"]."\n".$res["data"]."\n";
 		}
 		$arch->addFromString( static::baseDir.'/'.static::baseName, $result );
-		return array("comment"=>"bases backed up");
+		return;
 	}
 	function needBackup(){
 		return 1;

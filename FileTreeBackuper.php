@@ -67,7 +67,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		'ignores'=>'"ignore"  varchar(512) NOT NULL',//!<files to ignore, regexes in pcre format
 		'commits'=>'
 			"id"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-			"timestamp"  TIMESTAMP NOT NULL',
+			"timestamp" DateTime NOT NULL',
 		'movedCurrent'=>'
 			"inode"  integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 			"prevParent"  integer NOT NULL,
@@ -474,10 +474,14 @@ class FileTreeBackuper implements IBackuper{
 		//todo: add processing of deleted
 		
 		$this->index->save();
-		return array('comment'=>("+ ".count($this->index->added)
-			."\n* ".count($this->index->changed)
-			."\n-> ".count($this->index->moved)
-			."\n- ".count($this->index->deleted)));
+		return [
+			'comment'=>[
+				'+'=>count($this->index->added),
+				'*'=>count($this->index->changed),
+				'->'=>count($this->index->moved),
+				'-'=>count($this->index->deleted)
+			]
+		];
 	}
 	
 	
