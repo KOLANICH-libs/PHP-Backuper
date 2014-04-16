@@ -70,7 +70,7 @@ class WebDAVUploader implements IUploader{
 		$this->webdav=&$webdav;
 		$this->dir=$dir;
 	}
-	function upload($fileName,$as){
+	function upload(string $fileName,string $as){
 		return sabrePut($this->webdav,$fileName,$this->dir.'/',$as);
 	}
 };

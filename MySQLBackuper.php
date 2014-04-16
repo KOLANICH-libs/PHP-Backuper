@@ -30,7 +30,7 @@ class MySQLBackuper implements IBackuper{
 		}else throw new Exception("Input must be either PDO object or array with prefs");
 		
 	}
-	function prepareForBackup(&$base){
+	function prepareForBackup(PDO &$base){
 		
 	}
 	function makeBackup(&$arch){

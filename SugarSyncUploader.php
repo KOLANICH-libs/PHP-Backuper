@@ -31,7 +31,7 @@ class SugarSyncUploader implements IUploader{
 		$this->sugar->chdir($dir,'/');
 		$this->dir=$dir;
 	}
-	function upload($fileName,$as){
+	function upload(string $fileName,string $as){
 		//$this->sugar->chdir($dir,'/');
 		$this->sugar->upload($fileName,$as);
 	}

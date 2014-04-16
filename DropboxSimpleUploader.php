@@ -20,7 +20,7 @@ class DropboxSimpleUploader implements IUploader{
 		//$this->dropbox->uploadBuffer("test",$dir,"test");
 		$this->dir=$dir;
 	}
-	function upload($fileName,$as){
+	function upload(string $fileName,string $as){
 		$this->dropbox->upload($fileName,$this->dir,$as);
 	}
 };

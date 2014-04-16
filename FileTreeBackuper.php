@@ -80,7 +80,7 @@ class FileTreeBackuperIndex extends BackuperIndex{
 		parent::__construct($base);
 		
 		//! dropping databases ended with current
-		//! @todo: should i add a special stage to BackuperIndex using arrays?
+		//! @todo: should I add a special stage to BackuperIndex using arrays?
 		$this->base->exec('delete from `'.static::indexPrefix.'movedCurrent` where 1;');
 		$this->base->exec('delete from `'.static::indexPrefix.'deletedCurrent` where 1;');
 	}
@@ -442,7 +442,7 @@ class FileTreeBackuper implements IBackuper{
 	function __construct($roots){
 		$this->roots=&$roots;
 	}
-	function prepareForBackup(&$base){
+	function prepareForBackup(PDO &$base){
 		$this->index=new FileTreeBackuperIndex($base);
 		$roots=array();
 		foreach($this->roots as $root){

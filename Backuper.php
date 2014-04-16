@@ -8,8 +8,8 @@ interface IBackuper{
 	*/
 	function __construct($prefs);
 	/*!
-	used to backup all informatin which needs backup
-	@param ZipArchive &$arch where backups will be packed to
+	used to backup all information which needs backup
+	@param PharData &$arch where backups will be packed to
 	
 	usually a backuper creates some subfolders in the archive and strores backup data in them, for example /base/MySQL for MySQLBackuper  or /files and /patches for FileTreeBackuper
 	@return ['comment'=>[ something which can be serialized to JSON, it will be included to archive comment...]
@@ -21,7 +21,7 @@ interface IBackuper{
 	usually you will want to use BackuperIndex subclass to mantain base
 	@param PDO &$base opened db connection, don't close it (you can close it but must reopen .... may be in another base file, but it is strongly unrecommended to do so)
 	*/
-	function prepareForBackup(&$base);
+	function prepareForBackup(PDO &$base);
 	/*!
 	determines wheither backup is needed for this plugin
 	@returns boolean|integer does this plugin have work to do
@@ -35,7 +35,7 @@ interface IUploader{
 	@param string $fileName pathname of the zip archive
 	@param string &$as desired name of the zip archive on the target backup location, usually the same
 	*/
-	function upload($fileName,$as);
+	function upload(string $fileName,string $as);
 };
 
 /*!
