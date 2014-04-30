@@ -1,6 +1,9 @@
 <?php
-require_once("BackuperIndex.php");
-
+namespace Backuper;
+require_once(__DIR__.'vendor/autoload.php');
+use SPL;
+use dBug;
+use Exception;
 interface IBackuper{
 	/*!
 	initializes backuper plugin with prefs for it

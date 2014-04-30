@@ -1,8 +1,8 @@
 {
-	"name" : "KOLANICH/backuper",
+	"name" : "Backuper/Backuper",
 	"type" : "library",
 	"description" : "framework which will help you making (incremental) backups of your site.",
-	"keywords" : ["backup", "incremental", "pure php", "files", "sql", "DropBox", "WebDav", "SugarSync", "Yandex.Disk","Box.com"],
+	"keywords" : ["PHP-Backuper", "backup", "incremental", "upload", "pure php", "framework", "cloud storages"],
 	"homepage" : "https://github.com/KOLANICH/PHP-Backuper",
 	"license" : "BSD-3-Clause",
 	"authors" : [{
@@ -15,48 +15,28 @@
 		"php" : ">=5.4.0",
 		"ext-Reflection" : "*",
 		"ext-PHAR" : "*",
-		"ext-PDO" : "*",
-		"ext-pdo_sqlite" : "*",
 		"ext-SPL" : "*",
-		"ext-mhash":"*",
-		"ext-pcre":"*",
-		"ext-hash":"*"
+		"KOLANICH/dBug" : "*"
 	},
 	"suggest" : {
-		"KOLANICH/DropboxUploader" : "for DropboxSimpleUploader plugin which uploades files to Dropbox using your login and password",
-		"ext-pdo_mysql" : "for MySQLBackuper which is used for making backup (now it is non-incremental and backups only table structure and data) of your MySQL-compatible DB",
-		"sabre/dav" : "for WebDav upload"
-	},
-	"require-dev" : {
-		"KOLANICH/dBug" : "*"
+		"Backuper/FileTreeBackuper" : "For backuping files",
+		"Backuper/MySQLBackuper" : "For backuping MySQL Database",
+		"Backuper/WebDAVUploader" : "For uploading to WebDAV services such as Yandex.Disk, OneDrive and Box.com",
+		"Backuper/DropBoxUploader" : "For uploading to DropBox",
+		"Backuper/SugarSyncUploader" : "For uploading to SugarSync"
 	},
 	"support" : {
 		"issues" : "https://github.com/KOLANICH/PHP-Backuper/issues"
 	},
 	"autoload" : {
 		"classmap" : [
-			"Backuper.php"
+			"Backuper.php",
+			"BackuperIndex.php",
+			"ExceptionTestUploader.php"
 		]
 	},
-	"repositories" : [
-		{
-			"type" : "package",
-			"package" : {
-				"name" : "KOLANICH/DropboxUploader",
-				"version" : "1.2.3",
-				"source" : {
-					"type" : "git",
-					"url" : "https://github.com/KOLANICH/DropboxUploader.git",
-					"reference" : "master"
-				},
-				"autoload" : {
-					"classmap" : ["DropboxUploader.php"]
-				}
-			}
-		},
-		{
-			"type" : "vcs",
-			"url" : "https://github.com/KOLANICH/SabreDAV.git"
-		}
-	]
+	"repositories" : [{
+		"type" : "vcs",
+		"url" : "https://github.com/KOLANICH/dBug.git"
+	}]
 }

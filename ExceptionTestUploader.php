@@ -1,4 +1,5 @@
 <?php
+	namespace Backuper;
 	/*!
 		This plugin is for testing exceptions in plugins initialization phase
 	*/

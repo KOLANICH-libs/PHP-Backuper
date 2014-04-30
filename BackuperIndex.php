@@ -1,5 +1,6 @@
 <?php
-
+namespace Backuper;
+use PDO;
 /*!
 	can take either string or PDO object
 	if it is not BackuperIndex it will take PDO object, BackuperIndex will take either PDO or string, most likely string
